@@ -22,14 +22,11 @@ public class JWTUtil {
     private static final String CLAIM_KEY_ACCOUNT_NON_LOCKED = "non_locked";
     private static final String CLAIM_KEY_ACCOUNT_NON_EXPIRED = "non_expired";
 
-    @Value("${jwt.secret}")
-    private String secret;
+    private String secret="api-secret";
 
-    @Value("${jwt.access_token.expiration}")
-    private Long access_token_expiration;
+    private Long access_token_expiration=System.currentTimeMillis();
 
-    @Value("${jwt.refresh_token.expiration}")
-    private Long refresh_token_expiration;
+    private Long refresh_token_expiration=System.currentTimeMillis()+1000*60*60*6;
 
     private final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS256;
 
@@ -39,13 +36,13 @@ public class JWTUtil {
             final Claims claims = getClaimsFromToken(token);
             long userId = getUserIdFromToken(token);
             String username = claims.getSubject();
-            List roles = (List) claims.get(CLAIM_KEY_AUTHORITIES);
-            Collection<? extends GrantedAuthority> authorities = parseArrayToAuthorities(roles);
+//            List roles = (List) claims.get(CLAIM_KEY_AUTHORITIES);
+//            Collection<? extends GrantedAuthority> authorities = parseArrayToAuthorities(roles);
             boolean account_enabled = (Boolean) claims.get(CLAIM_KEY_ACCOUNT_ENABLED);
             boolean account_non_locked = (Boolean) claims.get(CLAIM_KEY_ACCOUNT_NON_LOCKED);
             boolean account_non_expired = (Boolean) claims.get(CLAIM_KEY_ACCOUNT_NON_EXPIRED);
 
-            user = new JWTUserDetails(userId, username, "password", account_enabled, account_non_expired, true, account_non_locked, authorities);
+            user = new JWTUserDetails(userId, username, "123456", account_enabled, account_non_expired, true, account_non_locked, null);
         } catch (Exception e) {
             user = null;
         }
@@ -125,9 +122,10 @@ public class JWTUtil {
     public String generateAccessToken(UserDetails userDetails) throws JsonProcessingException {
         JWTUserDetails user = (JWTUserDetails) userDetails;
         Map<String, Object> claims = generateClaims(user);
-        ObjectMapper mapper = new ObjectMapper();
-        claims.put(CLAIM_KEY_AUTHORITIES, mapper.writeValueAsString(authoritiesToArray((user.getAuthorities()))));
-        return generateAccessToken(user.getUsername(), claims);
+//        ObjectMapper mapper = new ObjectMapper();
+//        claims.put(CLAIM_KEY_AUTHORITIES, mapper.writeValueAsString(authoritiesToArray((user.getAuthorities()))));
+        String accessToken= generateAccessToken(user.getUsername(), claims);
+        return accessToken;
     }
 
     private Map<String, Object> generateClaims(JWTUserDetails user) {

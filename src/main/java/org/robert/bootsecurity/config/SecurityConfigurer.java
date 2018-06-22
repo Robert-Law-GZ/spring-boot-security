@@ -1,6 +1,7 @@
 package org.robert.bootsecurity.config;
 
 import org.robert.bootsecurity.filters.JWTAuthenticationFilter;
+import org.robert.bootsecurity.filters.JWTLoginFilter;
 import org.robert.bootsecurity.filters.TokenAuthorizationFilter;
 import org.robert.bootsecurity.jwt.JWTUserDetails;
 import org.robert.bootsecurity.service.JWTUserDetailsService;
@@ -14,6 +15,7 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -22,10 +24,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
-//    private final static String[] AUTH_WHITELIST = {
-//            "/*",
-//            "/static/**"
-//    };
+    private final static String[] AUTH_WHITELIST = {
+            "/*",
+            "/static/**"
+    };
 //    @Override
 //    protected void configure(HttpSecurity http) throws Exception {
 //        http.cors().and().csrf().disable()
@@ -40,12 +42,17 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 //    }
 
     @Bean
-    public JWTUserDetailsService userDetailsService(){
+    public JWTUserDetailsService userDetailsService() {
         return new JWTUserDetailsService();
     }
 
     @Bean
-    PasswordEncoder passwordEncoder(){
+    public BCryptPasswordEncoder cryptPasswordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    PasswordEncoder passwordEncoder() {
         return new PasswordEncoder() {
             @Override
             public String encode(CharSequence charSequence) {
@@ -59,10 +66,20 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
         };
     }
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication().passwordEncoder(passwordEncoder()).withUser("robert").password("123456").roles("ADMIN");
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+       auth.authenticationProvider(new CustomAuthenticationProvider(userDetailsService(),cryptPasswordEncoder()));
     }
+
+    //    @Autowired
+//    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+//        auth
+//                .inMemoryAuthentication()
+//                .passwordEncoder(passwordEncoder())
+//                .withUser("robert")
+//                .password("654321")
+//                .roles("ADMIN");
+//    }
 
 //    @Autowired
 //    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
@@ -74,18 +91,19 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 //        web.ignoring().antMatchers("/resources/**"); // #3
 //    }
 //
-//    @Override
-//    protected void configure(HttpSecurity http) throws Exception {
-//        http.authorizeRequests()
-//                .antMatchers("/*")
-//                .permitAll() // #4
-//                .antMatchers("/user/**")
-//                .hasRole("ADMIN") // #6
-//                .anyRequest().authenticated() // 7
-//                .and()
-//                .formLogin()  // #8
-//                .loginPage("/login")
-//                .permitAll(); // #5
-//    }
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.authorizeRequests()
+                .antMatchers("/*")
+                .permitAll() // #4
+                .antMatchers("/user/**")
+                .authenticated() // 7
+                .and()
+                .addFilter(new JWTAuthenticationFilter(authenticationManager()))
+                .addFilter(new JWTLoginFilter(authenticationManager()))
+                .formLogin()  // #8
+                .loginPage("/login")
+                .permitAll(); // #5
+    }
 
 }
