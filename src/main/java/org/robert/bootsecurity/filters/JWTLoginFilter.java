@@ -3,7 +3,7 @@ package org.robert.bootsecurity.filters;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.robert.bootsecurity.model.User;
+import org.robert.bootsecurity.entity.User;
 import org.robert.bootsecurity.util.ConstantKey;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

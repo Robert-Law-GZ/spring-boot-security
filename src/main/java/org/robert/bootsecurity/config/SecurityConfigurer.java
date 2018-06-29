@@ -1,9 +1,8 @@
 package org.robert.bootsecurity.config;
 
-import org.robert.bootsecurity.filters.JWTAuthenticationFilter;
-import org.robert.bootsecurity.filters.JWTLoginFilter;
-import org.robert.bootsecurity.filters.TokenAuthorizationFilter;
+import org.robert.bootsecurity.filters.*;
 import org.robert.bootsecurity.jwt.JWTUserDetails;
+import org.robert.bootsecurity.repository.UserRepository;
 import org.robert.bootsecurity.service.JWTUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +17,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 
 @Configuration
@@ -46,8 +46,11 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
         return new JWTUserDetailsService();
     }
 
+    @Autowired
+    UserRepository userRepository;
+
     @Bean
-    public BCryptPasswordEncoder cryptPasswordEncoder(){
+    public BCryptPasswordEncoder cryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -68,7 +71,7 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-       auth.authenticationProvider(new CustomAuthenticationProvider(userDetailsService(),cryptPasswordEncoder()));
+        auth.authenticationProvider(new CustomAuthenticationProvider(userRepository));
     }
 
     //    @Autowired
@@ -91,19 +94,46 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 //        web.ignoring().antMatchers("/resources/**"); // #3
 //    }
 //
+//    @Override
+//    protected void configure(HttpSecurity http) throws Exception {
+//        http.authorizeRequests()
+//                .antMatchers("/*")
+//                .permitAll() // #4
+//                .antMatchers("/user/**")
+//                .authenticated() // 7
+//                .and()
+//                .addFilter(new JWTAuthenticationFilter(authenticationManager()))
+//                .addFilter(new JWTLoginFilter(authenticationManager()))
+//                .formLogin()  // #8
+//                .loginPage("/login")
+//                .permitAll(); // #5
+//    }
+
+//    @Override
+//    protected void configure(HttpSecurity http) throws Exception {
+//        http.authorizeRequests()
+//                .antMatchers("/*")
+//                .permitAll() // #4
+//                .antMatchers("/user/**")
+//                .authenticated() // 7
+//                .and()
+//                .addFilterBefore(new TokenAuthorizationFilter(), BasicAuthenticationFilter.class)
+//                .formLogin()  // #8
+//                .loginPage("/login")
+//                .permitAll(); // #5
+//    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
+        http.csrf().disable().authorizeRequests()
                 .antMatchers("/*")
-                .permitAll() // #4
+                .permitAll()
                 .antMatchers("/user/**")
-                .authenticated() // 7
+                .authenticated()
                 .and()
-                .addFilter(new JWTAuthenticationFilter(authenticationManager()))
-                .addFilter(new JWTLoginFilter(authenticationManager()))
-                .formLogin()  // #8
+                .addFilterAfter(new JWTAuthFilter(authenticationManager()),BasicAuthenticationFilter.class)
+                .formLogin()
                 .loginPage("/login")
-                .permitAll(); // #5
+                .permitAll();
     }
-
 }

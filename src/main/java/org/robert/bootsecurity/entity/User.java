@@ -1,14 +1,23 @@
-package org.robert.bootsecurity.model;
+package org.robert.bootsecurity.entity;
 
+import javax.persistence.*;
 import java.math.BigDecimal;
 
+@Entity
 public class User {
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
+  @Column
   private String username;
-  private String name;
-  private Integer age;
-  private BigDecimal balance;
+  @Column
   private String password;
+  @Column
+  private String name;
+  @Column
+  private Integer age;
+  @Column
+  private BigDecimal balance;
 
   public String getPassword() {
     return password;

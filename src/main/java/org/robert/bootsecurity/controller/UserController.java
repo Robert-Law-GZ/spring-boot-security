@@ -1,9 +1,9 @@
 package org.robert.bootsecurity.controller;
 
-import org.robert.bootsecurity.model.User;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.robert.bootsecurity.entity.User;
+import org.robert.bootsecurity.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +11,9 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/user")
 public class UserController {
+
+    @Autowired
+    UserRepository userRepository;
 
     @GetMapping(value = "/info")
     public User test() {
@@ -20,7 +23,16 @@ public class UserController {
 
     @GetMapping(value = "/list")
     public List<User> list() {
-        return new ArrayList<>();
+        List<User> list=new ArrayList();
+        list.add(new User());
+        list.add(new User());
+        list.add(new User());
+        return list;
+    }
+
+    @PostMapping(value = "/userById")
+    public User findById(@RequestParam Long id){
+        return userRepository.findUserById(id);
     }
 
 }

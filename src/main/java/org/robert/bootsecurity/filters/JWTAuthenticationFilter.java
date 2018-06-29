@@ -20,7 +20,7 @@ import java.io.IOException;
 
 public class JWTAuthenticationFilter extends BasicAuthenticationFilter {
 
-    private static final String token_header = "authentication";
+    private static final String token_header = "Authentication";
 
     @Bean
     public JWTUtil jwtUtils(){
@@ -34,7 +34,7 @@ public class JWTAuthenticationFilter extends BasicAuthenticationFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
 
-        String auth_token = request.getHeader(token_header);
+        String auth_token = request.getHeader(JWTAuthFilter.AUTH_HEADER);
 
         if (auth_token != null) {
 

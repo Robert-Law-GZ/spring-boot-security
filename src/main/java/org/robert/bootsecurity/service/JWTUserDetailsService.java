@@ -1,7 +1,7 @@
 package org.robert.bootsecurity.service;
 
+import org.robert.bootsecurity.entity.User;
 import org.robert.bootsecurity.jwt.JWTUserDetails;
-import org.robert.bootsecurity.model.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
