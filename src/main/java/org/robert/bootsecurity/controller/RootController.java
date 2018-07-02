@@ -1,25 +1,20 @@
 package org.robert.bootsecurity.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.robert.bootsecurity.entity.User;
 import org.robert.bootsecurity.filters.JWTAuthFilter;
 import org.robert.bootsecurity.jwt.JWTHelper;
-import org.robert.bootsecurity.jwt.JWTUserDetails;
-import org.robert.bootsecurity.jwt.JWTUtil;
-import org.robert.bootsecurity.repository.UserRepository;
+import org.robert.bootsecurity.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
 
 @Controller
 public class RootController {
 
     @Autowired
-    private UserRepository userRepository;
+    private AccountService accountService;
 
     @RequestMapping(value = "/login")
     public String login() {
@@ -49,13 +44,13 @@ public class RootController {
 
     @RequestMapping(value = "/sign", method = RequestMethod.POST)
     public String sign(HttpServletResponse response, @RequestParam String username, @RequestParam String password) {
-        User user = userRepository.findUserByUsername(username);
+        User user = accountService.findByUsername(username);
 
         if (user != null) {
 
             if (user.getPassword().equalsIgnoreCase(password)) {
 
-                String token = JWTHelper.buildToken(username);
+                String token = JWTHelper.buildToken(user.getId());
                 response.addHeader(JWTAuthFilter.AUTH_HEADER, token);
 
                 return "main";

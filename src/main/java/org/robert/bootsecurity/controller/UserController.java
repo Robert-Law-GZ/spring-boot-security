@@ -1,7 +1,7 @@
 package org.robert.bootsecurity.controller;
 
 import org.robert.bootsecurity.entity.User;
-import org.robert.bootsecurity.repository.UserRepository;
+import org.robert.bootsecurity.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +13,7 @@ import java.util.List;
 public class UserController {
 
     @Autowired
-    UserRepository userRepository;
+    AccountService accountService;
 
     @GetMapping(value = "/info")
     public User test() {
@@ -32,7 +32,7 @@ public class UserController {
 
     @PostMapping(value = "/userById")
     public User findById(@RequestParam Long id){
-        return userRepository.findUserById(id);
+        return accountService.findById(id);
     }
 
 }

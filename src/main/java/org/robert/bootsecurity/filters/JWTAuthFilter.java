@@ -1,8 +1,10 @@
 package org.robert.bootsecurity.filters;
 
 import io.jsonwebtoken.Claims;
+import org.robert.bootsecurity.entity.User;
 import org.robert.bootsecurity.jwt.JWTHelper;
 import org.robert.bootsecurity.jwt.JWTUserDetails;
+import org.robert.bootsecurity.service.AccountService;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,9 +28,11 @@ public class JWTAuthFilter extends OncePerRequestFilter {
 
     private AuthenticationManager authenticationManager;
     private RememberMeServices rememberMeServices = new NullRememberMeServices();
+    private AccountService accountService;
 
-    public JWTAuthFilter(AuthenticationManager authenticationManager) {
+    public JWTAuthFilter(AuthenticationManager authenticationManager,AccountService accountService) {
         this.authenticationManager = authenticationManager;
+        this.accountService=accountService;
     }
 
     @Override
@@ -45,19 +49,24 @@ public class JWTAuthFilter extends OncePerRequestFilter {
 
             try {
                 Claims claims = JWTHelper.claimsFromToken(header);
-                String username = claims.getSubject();
+                String id = claims.getSubject();
 
-                if (username != null) {
+                if (id != null) {
 
-                    if (authenticationIsRequired(username)) {
-                        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(username, "123456");
-                        JWTUserDetails userDetails = new JWTUserDetails(1, username, "123456", new ArrayList());
-                        authRequest.setDetails(userDetails);
-                        Authentication authResult = this.authenticationManager.authenticate(authRequest);
-                        logger.info("Authentication success: " + authResult);
+                    if (authenticationIsRequired(id)) {
+                        User user=accountService.findById(Long.parseLong(id));
+                        if (user!=null) {
+                            UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
+                            JWTUserDetails userDetails = new JWTUserDetails(user.getId(), user.getUsername(), user.getPassword(), new ArrayList());
+                            authRequest.setDetails(userDetails);
+                            Authentication authResult = this.authenticationManager.authenticate(authRequest);
+                            logger.info("Authentication success: " + authResult);
 
-                        SecurityContextHolder.getContext().setAuthentication(authResult);
-                        rememberMeServices.loginSuccess(httpServletRequest, httpServletResponse, authResult);
+                            SecurityContextHolder.getContext().setAuthentication(authResult);
+                            rememberMeServices.loginSuccess(httpServletRequest, httpServletResponse, authResult);
+                        }else{
+                            logger.info("验证失败，没有找到用户名");
+                        }
                     }
 
                 } else {

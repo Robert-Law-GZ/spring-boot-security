@@ -10,8 +10,8 @@ import java.util.Date;
 public class JWTHelper {
     public final static String SECRET = "api-secret";
 
-    public static String buildToken(String username) {
-        String token = Jwts.builder().setSubject(username)
+    public static String buildToken(Long id) {
+        String token = Jwts.builder().setSubject(String.valueOf(id))
                 .setIssuedAt(new Date())
                 .compressWith(CompressionCodecs.DEFLATE)
                 .signWith(SignatureAlgorithm.HS256, SECRET)

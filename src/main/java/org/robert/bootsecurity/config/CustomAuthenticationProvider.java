@@ -2,6 +2,7 @@ package org.robert.bootsecurity.config;
 
 import org.robert.bootsecurity.entity.User;
 import org.robert.bootsecurity.repository.UserRepository;
+import org.robert.bootsecurity.service.AccountService;
 import org.robert.bootsecurity.service.JWTUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -23,10 +24,10 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    UserRepository userRepository;
+    AccountService accountService;
 
-    public CustomAuthenticationProvider(UserRepository userRepository) {
-        this.userRepository=userRepository;
+    public CustomAuthenticationProvider(AccountService accountService) {
+        this.accountService=accountService;
     }
 
     @Override
@@ -36,7 +37,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         String password = authentication.getCredentials().toString();
 
         //通过用户名从数据库中查询该用户
-        User user=userRepository.findUserByUsername(username);
+        User user=accountService.findByUsername(username);
 
         if (user==null){
             throw new UsernameNotFoundException("用户不存在");
